@@ -4,6 +4,8 @@ import "database/sql"
 
 type Repository interface {
 	GetProductById(productId int) (*Product, error)
+	GetProducts(params *getProductsRequest) ([]*Product, error)
+	GetTotalProducts() (int, error)
 }
 
 type repository struct {
@@ -35,4 +37,49 @@ func (repo *repository) GetProductById(productId int) (*Product, error) {
 		panic(err)
 	}
 	return product, err
+}
+
+func (repo *repository) GetProducts(params *getProductsRequest) ([]*Product, error) {
+	const sql = `SELECT
+		products.id,
+		products.product_code,
+		products.product_name,
+		COALESCE ( products.description, '' ) AS description,
+		products.standard_cost,
+		products.list_price,
+		products.category 
+	FROM
+		products 
+	ORDER BY
+		products.id
+	LIMIT ? OFFSET ?`
+	results, err := repo.db.Query(sql, params.Limit, params.Offset)
+	if err != nil {
+		panic(err)
+	}
+
+	var products []*Product
+	for results.Next() {
+		product := &Product{}
+		err = results.Scan(&product.Id, &product.ProductCode, &product.ProductName, &product.Description, &product.StandardCost, &product.ListPrice, &product.Category)
+		if err != nil {
+			panic(err)
+		}
+		products = append(products, product)
+	}
+	return products, nil
+}
+
+func (repo *repository) GetTotalProducts() (int, error) {
+	const sql = `SELECT
+		COUNT(*) AS total
+	FROM
+		products`
+	var total int
+	row := repo.db.QueryRow(sql)
+	err := row.Scan(&total)
+	if err != nil {
+		panic(err)
+	}
+	return total, nil
 }

@@ -27,6 +27,9 @@ func MakeHttpHandler(s Service) http.Handler {
 	deleteProductHandler := kithttp.NewServer(makeDeleteProductEndpoint(s), deleteProductRequestDecoder, kithttp.EncodeJSONResponse)
 	r.Method(http.MethodDelete, "/{id}", deleteProductHandler)
 
+	getBestSellerHandler := kithttp.NewServer(makeBestSellersEndpoint(s), getBestSellerRequestDecoder, kithttp.EncodeJSONResponse)
+	r.Method(http.MethodGet, "/bestSellers", getBestSellerHandler)
+
 	return r
 }
 
@@ -68,4 +71,8 @@ func deleteProductRequestDecoder(_ context.Context, r *http.Request) (interface{
 	return deleteProductRequest{
 		ProductID: chi.URLParam(r, "id"),
 	}, nil
+}
+
+func getBestSellerRequestDecoder(_ context.Context, r *http.Request) (interface{}, error) {
+	return getBestSellersRequest{}, nil
 }

@@ -37,6 +37,8 @@ type deleteProductRequest struct {
 	ProductID string
 }
 
+type getBestSellersRequest struct{}
+
 func makeGetProductByIdEndpoint(s Service) endpoint.Endpoint {
 	getProductByIdEndpoint := func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(getProductByIDRequest)
@@ -96,4 +98,15 @@ func makeDeleteProductEndpoint(s Service) endpoint.Endpoint {
 		return result, nil
 	}
 	return deleteProductEndpoint
+}
+
+func makeBestSellersEndpoint(s Service) endpoint.Endpoint {
+	getBestSellerEnpoint := func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		result, err := s.GetBestSellers()
+		if err != nil {
+			panic(err)
+		}
+		return result, nil
+	}
+	return getBestSellerEnpoint
 }

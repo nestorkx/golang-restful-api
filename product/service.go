@@ -1,5 +1,7 @@
 package product
 
+import "golang-restful-api/helper"
+
 type Service interface {
 	GetProductById(param *getProductByIDRequest) (*Product, error)
 	GetProducts(params *getProductsRequest) (*ProductList, error)
@@ -24,13 +26,9 @@ func (s *service) GetProductById(param *getProductByIDRequest) (*Product, error)
 
 func (s *service) GetProducts(params *getProductsRequest) (*ProductList, error) {
 	products, err := s.repo.GetProducts(params)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	totalProducts, err := s.repo.GetTotalProducts()
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return &ProductList{Data: products, TotalRecords: totalProducts}, nil
 }
 
@@ -48,12 +46,8 @@ func (s *service) DeleteProduct(params *deleteProductRequest) (int64, error) {
 
 func (s *service) GetBestSellers() (*ProductTopResponse, error) {
 	products, err := s.repo.GetBestSellers()
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	totalVentas, err := s.repo.GetTotalVentas()
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return &ProductTopResponse{Data: products, TotalVentas: totalVentas}, nil
 }

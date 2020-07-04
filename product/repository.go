@@ -1,6 +1,9 @@
 package product
 
-import "database/sql"
+import (
+	"database/sql"
+	"golang-restful-api/helper"
+)
 
 type Repository interface {
 	GetProductById(productId int) (*Product, error)
@@ -38,9 +41,7 @@ func (repo *repository) GetProductById(productId int) (*Product, error) {
 	product := &Product{}
 
 	err := row.Scan(&product.Id, &product.ProductCode, &product.ProductName, &product.Description, &product.StandardCost, &product.ListPrice, &product.Category)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return product, err
 }
 
@@ -59,17 +60,13 @@ func (repo *repository) GetProducts(params *getProductsRequest) ([]*Product, err
 		products.id
 	LIMIT ? OFFSET ?`
 	results, err := repo.db.Query(sql, params.Limit, params.Offset)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 
 	var products []*Product
 	for results.Next() {
 		product := &Product{}
 		err = results.Scan(&product.Id, &product.ProductCode, &product.ProductName, &product.Description, &product.StandardCost, &product.ListPrice, &product.Category)
-		if err != nil {
-			panic(err)
-		}
+		helper.Catch(err)
 		products = append(products, product)
 	}
 	return products, nil
@@ -83,18 +80,14 @@ func (repo *repository) GetTotalProducts() (int, error) {
 	var total int
 	row := repo.db.QueryRow(sql)
 	err := row.Scan(&total)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return total, nil
 }
 
 func (repo *repository) InsertProduct(params *getAddProductRequest) (int64, error) {
 	const sql = `INSERT INTO products (product_code, product_name, category, description, list_price, standard_cost) VALUES(?,?,?,?,?,?)`
 	result, err := repo.db.Exec(sql, params.ProductCode, params.ProductName, params.Category, params.Description, params.ListPrice, params.StandardCost)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	id, _ := result.LastInsertId()
 	return id, nil
 }
@@ -110,22 +103,16 @@ func (repo *repository) UpdateProduct(params *updateProductRequest) (int64, erro
 	WHERE
 		products.id = ?`
 	_, err := repo.db.Exec(sql, params.ProductCode, params.ProductName, params.Category, params.Description, params.ListPrice, params.StandardCost, params.ID)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return params.ID, nil
 }
 
 func (repo *repository) DeleteProduct(params *deleteProductRequest) (int64, error) {
 	const sql = `DELETE FROM products WHERE products.id = ?`
 	res, err := repo.db.Exec(sql, params.ProductID)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	count, err := res.RowsAffected()
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return count, nil
 }
 
@@ -143,16 +130,12 @@ func (repo *repository) GetBestSellers() ([]*ProductTop, error) {
 		vendido DESC 
 		LIMIT 10`
 	results, err := repo.db.Query(sql)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	var products []*ProductTop
 	for results.Next() {
 		product := &ProductTop{}
 		err = results.Scan(&product.ID, &product.ProductName, &product.Vendidos)
-		if err != nil {
-			panic(err)
-		}
+		helper.Catch(err)
 		products = append(products, product)
 	}
 	return products, nil
@@ -166,8 +149,6 @@ func (repo *repository) GetTotalVentas() (float64, error) {
 	var total float64
 	row := repo.db.QueryRow(sql)
 	err := row.Scan(&total)
-	if err != nil {
-		panic(err)
-	}
+	helper.Catch(err)
 	return total, nil
 }
